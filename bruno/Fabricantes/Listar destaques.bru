@@ -1,0 +1,23 @@
+meta {
+  name: Listar destaques
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/fabricantes?destaque=true
+  body: none
+  auth: none
+}
+
+params:query {
+  destaque: true
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  GET público com filtro. Retorna apenas fabricantes com `destaque = true`.
+}

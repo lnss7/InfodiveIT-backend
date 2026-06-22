@@ -1,0 +1,33 @@
+meta {
+  name: Atualizar fabricante
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/fabricantes/{{fabricanteId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "slug": "ibm",
+    "nome": "IBM Brasil",
+    "descricao": "Integradora global de tecnologia e serviços de TI.",
+    "descricaoCurta": "Tecnologia corporativa e nuvem híbrida.",
+    "logoUrl": "https://infodive.com.br/logos/ibm.svg",
+    "siteOficial": "https://www.ibm.com/br-pt",
+    "destaque": true,
+    "ordem": 2
+  }
+}
+
+docs {
+  PROTEGIDO (JWT). Retorna 200 com o fabricante atualizado.
+  O `slug` é imutável: mesmo enviado no body, não é alterado pelo update.
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Buscar por slug
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/fabricantes/{{slug}}
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+  slug: ibm
+}
+
+docs {
+  GET público. 200 com o fabricante ou 404 (ResourceNotFoundException)
+  no formato padrão do GlobalExceptionHandler caso o slug não exista.
+}

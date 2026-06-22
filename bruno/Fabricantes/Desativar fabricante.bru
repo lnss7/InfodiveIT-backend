@@ -1,0 +1,20 @@
+meta {
+  name: Desativar fabricante
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/fabricantes/{{fabricanteId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  PROTEGIDO (JWT). Soft delete (ativo = false). Retorna 204 No Content.
+  Após isso, o fabricante deixa de aparecer nos GETs públicos.
+}

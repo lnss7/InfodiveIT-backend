@@ -1,0 +1,20 @@
+meta {
+  name: Listar fabricantes
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/fabricantes
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+docs {
+  GET público. Deve retornar 200 com a lista de fabricantes ativos
+  ordenada por `ordem` (vazia enquanto não houver registros).
+}
