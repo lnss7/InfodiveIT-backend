@@ -1,0 +1,43 @@
+meta {
+  name: Criar categoria
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/categorias
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+}
+
+body:json {
+  {
+    "slug": "dados",
+    "titulo": "Dados & Analytics",
+    "icone": "database",
+    "subtituloCurto": "Decisões guiadas por dados",
+    "descricaoCurta": "Plataformas de dados, BI e analytics.",
+    "overview": "Visão completa de dados: ingestão, governança, BI e IA.",
+    "features": [
+      { "titulo": "Data Lakehouse", "descricao": "Arquitetura unificada para dados estruturados e não estruturados." }
+    ],
+    "imagemUrl": "https://infodive.com.br/img/dados.jpg",
+    "fabricantesTitulo": "Fabricantes homologados",
+    "fabricantesDescricao": "Parceiros líderes em dados.",
+    "ordem": 4,
+    "fabricanteIds": []
+  }
+}
+
+docs {
+  PROTEGIDO (JWT). Retorna 201. Até a Fase 11 retorna 401/403.
+  Em fabricanteIds, coloque UUIDs reais de fabricantes para criar a relação N:N.
+}

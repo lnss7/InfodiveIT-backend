@@ -3,13 +3,18 @@ package br.com.infodive.infodive_api.mapper;
 import br.com.infodive.infodive_api.dto.request.FabricanteRequest;
 import br.com.infodive.infodive_api.dto.response.FabricanteResponse;
 import br.com.infodive.infodive_api.entity.Fabricante;
+import br.com.infodive.infodive_api.entity.Solucao;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FabricanteMapper {
 
     public FabricanteResponse toResponse(Fabricante entity) {
+        List<UUID> categoriaIds = entity.getSolucoes() == null
+                ? List.of()
+                : entity.getSolucoes().stream().map(Solucao::getId).toList();
         return new FabricanteResponse(
                 entity.getId(),
                 entity.getNome(),
@@ -19,8 +24,7 @@ public class FabricanteMapper {
                 entity.isDestaque(),
                 entity.getOrdem(),
                 entity.isAtivo(),
-                // TODO Fase 3: preencher com os IDs das soluções (categorias) via solucoes_fabricantes
-                List.of(),
+                categoriaIds,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

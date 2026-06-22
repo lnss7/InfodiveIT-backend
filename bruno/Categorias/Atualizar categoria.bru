@@ -1,0 +1,43 @@
+meta {
+  name: Atualizar categoria
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/categorias/{{categoriaId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:8080/api/v1
+  categoriaId: 00000000-0000-0000-0000-000000000000
+}
+
+body:json {
+  {
+    "slug": "seguranca",
+    "titulo": "Segurança da Informação",
+    "icone": "shield-check",
+    "subtituloCurto": "Proteção de ponta a ponta",
+    "descricaoCurta": "Cibersegurança corporativa, do endpoint à nuvem.",
+    "overview": "Visão completa de segurança: prevenção, detecção e resposta.",
+    "features": [
+      { "titulo": "SOC 24/7", "descricao": "Monitoramento e resposta a incidentes ininterruptos." }
+    ],
+    "imagemUrl": "https://infodive.com.br/img/seguranca.jpg",
+    "fabricantesTitulo": "Fabricantes homologados",
+    "fabricantesDescricao": "Líderes de mercado em segurança.",
+    "ordem": 1,
+    "fabricanteIds": []
+  }
+}
+
+docs {
+  PROTEGIDO (JWT). Retorna 200. O slug é imutável (não muda mesmo enviado no body).
+}
