@@ -16,7 +16,7 @@ auth:bearer {
 
 body:json {
   {
-    "segmento": "Setor Financeiro",
+    "segmento": "Setor Financeiro teste",
     "cliente": "Banco Regional",
     "titulo": "Migração segura para Nuvem Privada",
     "desafio": "O banco precisava reduzir latência e custos de infraestrutura mantendo conformidade rígida de segurança.",
@@ -32,6 +32,7 @@ body:json {
 
 vars:pre-request {
   baseUrl: http://localhost:8080/api/v1
+  token: eyJhbGciOiJIUzI1NiJ9.eyJub21lIjoiYWRtaW4iLCJzdWIiOiJhZG1pbkBpbmZvZGl2ZS5jb20uYnIiLCJpYXQiOjE3ODIxNTM0MTYsImV4cCI6MTc4MjIzOTgxNn0.rFzN9oNcnqb5kX6OupQeRSqhPwC-9JVBOMR7AIHMlVY
 }
 
 script:post-response {
