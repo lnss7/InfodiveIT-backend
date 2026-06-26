@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.SobreValoresRequest;
 import br.com.infodive.infodive_api.dto.response.SobreValoresResponse;
 import br.com.infodive.infodive_api.entity.SobreValores;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,17 @@ public class SobreValoresService {
         return repository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Valores (sobre) não encontrados"));
+    }
+
+    @Transactional
+    public SobreValoresResponse update(SobreValoresRequest request) {
+        SobreValores entity = repository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Valores (sobre) não encontrados"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setParagrafo(request.paragrafo());
+        entity.setValores(request.valores());
+        return toResponse(repository.save(entity));
     }
 
     private SobreValoresResponse toResponse(SobreValores e) {

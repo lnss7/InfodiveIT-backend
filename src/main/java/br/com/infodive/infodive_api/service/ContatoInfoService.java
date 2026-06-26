@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.ContatoInfoRequest;
 import br.com.infodive.infodive_api.dto.response.ContatoInfoResponse;
 import br.com.infodive.infodive_api.entity.ContatoInfo;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,26 @@ public class ContatoInfoService {
         return contatoInfoRepository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Informações de contato não encontradas"));
+    }
+
+    @Transactional
+    public ContatoInfoResponse update(ContatoInfoRequest request) {
+        ContatoInfo entity = contatoInfoRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Informações de contato não encontradas"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setSubtitulo(request.subtitulo());
+        entity.setEmail(request.email());
+        entity.setTelefone(request.telefone());
+        entity.setEndereco(request.endereco());
+        entity.setHorarioComercial(request.horarioComercial());
+        entity.setHorarioNoc(request.horarioNoc());
+        entity.setCardTitulo(request.cardTitulo());
+        entity.setCardDescricao(request.cardDescricao());
+        entity.setCardBullets(request.cardBullets());
+        entity.setCardCtaTexto(request.cardCtaTexto());
+        entity.setCardStatus(request.cardStatus());
+        return toResponse(contatoInfoRepository.save(entity));
     }
 
     private ContatoInfoResponse toResponse(ContatoInfo e) {

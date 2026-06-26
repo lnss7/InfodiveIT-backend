@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.ConfigFooterRequest;
 import br.com.infodive.infodive_api.dto.response.ConfigFooterResponse;
 import br.com.infodive.infodive_api.entity.ConfigFooter;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,20 @@ public class ConfigFooterService {
         return configFooterRepository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Configuração de footer não encontrada"));
+    }
+
+    @Transactional
+    public ConfigFooterResponse update(ConfigFooterRequest request) {
+        ConfigFooter entity = configFooterRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Configuração de footer não encontrada"));
+        entity.setDescricaoEmpresa(request.descricaoEmpresa());
+        entity.setBadgeNoc(request.badgeNoc());
+        entity.setBadgeCloud(request.badgeCloud());
+        entity.setNomeLegal(request.nomeLegal());
+        entity.setUrlLinkedin(request.urlLinkedin());
+        entity.setUrlInstagram(request.urlInstagram());
+        entity.setUrlFacebook(request.urlFacebook());
+        return toResponse(configFooterRepository.save(entity));
     }
 
     private ConfigFooterResponse toResponse(ConfigFooter e) {

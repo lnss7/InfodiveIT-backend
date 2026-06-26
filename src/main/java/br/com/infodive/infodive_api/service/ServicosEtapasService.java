@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.ServicosEtapasRequest;
 import br.com.infodive.infodive_api.dto.response.ServicosEtapasResponse;
 import br.com.infodive.infodive_api.entity.ServicosEtapas;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,17 @@ public class ServicosEtapasService {
         return repository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Etapas de serviços não encontradas"));
+    }
+
+    @Transactional
+    public ServicosEtapasResponse update(ServicosEtapasRequest request) {
+        ServicosEtapas entity = repository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Etapas de serviços não encontradas"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setSubtitulo(request.subtitulo());
+        entity.setEtapas(request.etapas());
+        return toResponse(repository.save(entity));
     }
 
     private ServicosEtapasResponse toResponse(ServicosEtapas e) {

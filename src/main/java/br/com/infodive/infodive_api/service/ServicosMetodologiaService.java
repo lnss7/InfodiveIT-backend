@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.ServicosMetodologiaRequest;
 import br.com.infodive.infodive_api.dto.response.ServicosMetodologiaResponse;
 import br.com.infodive.infodive_api.entity.ServicosMetodologia;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,18 @@ public class ServicosMetodologiaService {
         return repository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Metodologia de serviços não encontrada"));
+    }
+
+    @Transactional
+    public ServicosMetodologiaResponse update(ServicosMetodologiaRequest request) {
+        ServicosMetodologia entity = repository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Metodologia de serviços não encontrada"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setParagrafo(request.paragrafo());
+        entity.setMetricas(request.metricas());
+        entity.setPilares(request.pilares());
+        return toResponse(repository.save(entity));
     }
 
     private ServicosMetodologiaResponse toResponse(ServicosMetodologia e) {

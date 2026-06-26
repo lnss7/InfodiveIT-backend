@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.SobreCulturaRequest;
 import br.com.infodive.infodive_api.dto.response.SobreCulturaResponse;
 import br.com.infodive.infodive_api.entity.SobreCultura;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,17 @@ public class SobreCulturaService {
         return repository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Cultura (sobre) não encontrada"));
+    }
+
+    @Transactional
+    public SobreCulturaResponse update(SobreCulturaRequest request) {
+        SobreCultura entity = repository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Cultura (sobre) não encontrada"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setParagrafo(request.paragrafo());
+        entity.setFotos(request.fotos());
+        return toResponse(repository.save(entity));
     }
 
     private SobreCulturaResponse toResponse(SobreCultura e) {

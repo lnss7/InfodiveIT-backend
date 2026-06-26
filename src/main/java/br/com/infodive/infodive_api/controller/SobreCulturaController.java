@@ -1,10 +1,14 @@
 package br.com.infodive.infodive_api.controller;
 
+import br.com.infodive.infodive_api.dto.request.SobreCulturaRequest;
 import br.com.infodive.infodive_api.dto.response.SobreCulturaResponse;
 import br.com.infodive.infodive_api.service.SobreCulturaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,5 +22,10 @@ public class SobreCulturaController {
     @GetMapping
     public ResponseEntity<SobreCulturaResponse> get() {
         return ResponseEntity.ok(service.get());
+    }
+
+    @PutMapping
+    public ResponseEntity<SobreCulturaResponse> update(@Valid @RequestBody SobreCulturaRequest request) {
+        return ResponseEntity.ok(service.update(request));
     }
 }

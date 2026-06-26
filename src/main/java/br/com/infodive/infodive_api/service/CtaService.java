@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.CtaRequest;
 import br.com.infodive.infodive_api.dto.response.CtaResponse;
 import br.com.infodive.infodive_api.entity.Cta;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,16 @@ public class CtaService {
         return ctaRepository.findByPagina(pagina)
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + pagina));
+    }
+
+    @Transactional
+    public CtaResponse update(String pagina, CtaRequest request) {
+        Cta entity = ctaRepository.findByPagina(pagina)
+                .orElseThrow(() -> new ResourceNotFoundException("CTA não encontrado para a página: " + pagina));
+        entity.setTitulo(request.titulo());
+        entity.setSubtitulo(request.subtitulo());
+        entity.setCtaTexto(request.ctaTexto());
+        return toResponse(ctaRepository.save(entity));
     }
 
     private CtaResponse toResponse(Cta e) {

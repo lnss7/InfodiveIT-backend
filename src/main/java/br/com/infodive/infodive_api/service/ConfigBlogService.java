@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.ConfigBlogRequest;
 import br.com.infodive.infodive_api.dto.response.ConfigBlogResponse;
 import br.com.infodive.infodive_api.entity.ConfigBlog;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,20 @@ public class ConfigBlogService {
         return configBlogRepository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Configuração de blog não encontrada"));
+    }
+
+    @Transactional
+    public ConfigBlogResponse update(ConfigBlogRequest request) {
+        ConfigBlog entity = configBlogRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Configuração de blog não encontrada"));
+        entity.setArtigosEyebrow(request.artigosEyebrow());
+        entity.setArtigosHeadline(request.artigosHeadline());
+        entity.setSocialEyebrow(request.socialEyebrow());
+        entity.setSocialHeadline(request.socialHeadline());
+        entity.setSocialDescricao(request.socialDescricao());
+        entity.setUrlInstagram(request.urlInstagram());
+        entity.setUrlLinkedin(request.urlLinkedin());
+        return toResponse(configBlogRepository.save(entity));
     }
 
     private ConfigBlogResponse toResponse(ConfigBlog e) {

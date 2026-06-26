@@ -1,5 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
+import br.com.infodive.infodive_api.dto.request.SobreTimelineRequest;
 import br.com.infodive.infodive_api.dto.response.SobreTimelineResponse;
 import br.com.infodive.infodive_api.entity.SobreTimeline;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
@@ -19,6 +20,16 @@ public class SobreTimelineService {
         return repository.findAll().stream().findFirst()
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Timeline (sobre) não encontrada"));
+    }
+
+    @Transactional
+    public SobreTimelineResponse update(SobreTimelineRequest request) {
+        SobreTimeline entity = repository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Timeline (sobre) não encontrada"));
+        entity.setEyebrow(request.eyebrow());
+        entity.setHeadline(request.headline());
+        entity.setMarcos(request.marcos());
+        return toResponse(repository.save(entity));
     }
 
     private SobreTimelineResponse toResponse(SobreTimeline e) {
