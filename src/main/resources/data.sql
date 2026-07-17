@@ -59,6 +59,18 @@ VALUES
   (gen_random_uuid(), 'endpoints', 'Endpoints & Gestão de Dispositivos', 'laptop', 'Gerenciamento centralizado, padronização e segurança de estações de trabalho.', 'Provisionamento automático, controle de patch management e segurança para frotas híbridas de desktops e notebooks.', 'Protegemos e padronizamos a porta de entrada da sua infraestrutura corporativa. Com soluções modernas de Unified Endpoint Management (UEM), mantemos servidores virtuais, notebooks de colaboradores e sistemas remotos constantemente atualizados, auditados e seguros.', '[{"titulo":"Unified Endpoint Management (UEM)","descricao":"Gerenciamento centralizado de sistemas operacionais híbridos (Windows, macOS, Linux) para auditorias de segurança e políticas unificadas."},{"titulo":"Distribuição e Patching Automático","descricao":"Atualizações de segurança críticas implantadas sem interrupção de produtividade dos colaboradores e com relatórios automáticos de conformidade."},{"titulo":"Segurança de Dispositivos Remotos","descricao":"Criptografia de disco local compulsória, bloqueio de portas USB e isolamento de máquinas perdidas ou roubadas para proteção total de informações corporativas."}]'::jsonb, 'https://infodive.com.br/img/solucoes/endpoints.jpg', 'Fabricantes homologados', 'Trabalhamos com Microsoft, Acronis e Apple.', 9, true, (SELECT id FROM categorias WHERE slug = 'seguranca'), now(), now())
 ON CONFLICT (slug) DO NOTHING;
 
+UPDATE solucoes
+SET
+  recurso_chave_1 = COALESCE(NULLIF(recurso_chave_1, ''), features->0->>'titulo'),
+  recurso_chave_2 = COALESCE(NULLIF(recurso_chave_2, ''), features->1->>'titulo'),
+  recurso_chave_3 = COALESCE(NULLIF(recurso_chave_3, ''), features->2->>'titulo')
+WHERE features IS NOT NULL
+  AND (
+    recurso_chave_1 IS NULL OR recurso_chave_1 = ''
+    OR recurso_chave_2 IS NULL OR recurso_chave_2 = ''
+    OR recurso_chave_3 IS NULL OR recurso_chave_3 = ''
+  );
+
 -- ========== Junção N:N solucoes_fabricantes (vendors de cada solução) ==========
 INSERT INTO solucoes_fabricantes (solucao_id, fabricante_id)
 SELECT s.id, f.id
