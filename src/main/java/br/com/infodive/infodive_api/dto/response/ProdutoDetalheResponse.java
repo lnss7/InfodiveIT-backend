@@ -20,6 +20,7 @@ public record ProdutoDetalheResponse(
         String servicosTitulo,
         String servicosDescricao,
         String imagemUrl,
+        String linkOficial,
         boolean destaque,
         boolean ativo,
         UUID categoriaId,
@@ -32,6 +33,7 @@ public record ProdutoDetalheResponse(
         String fabricanteNome,
         String fabricanteLogoUrl,
         List<ServicoResumoResponse> servicos,
+        List<UUID> servicoIds,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

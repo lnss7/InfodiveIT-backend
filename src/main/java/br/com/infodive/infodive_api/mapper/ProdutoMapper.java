@@ -35,6 +35,9 @@ public class ProdutoMapper {
                 : entity.getServicos().stream()
                         .map(s -> new ServicoResumoResponse(s.getId(), s.getNome(), s.getSlug(), s.getIcone()))
                         .toList();
+        List<java.util.UUID> servicoIds = entity.getServicos() == null
+                ? List.of()
+                : entity.getServicos().stream().map(br.com.infodive.infodive_api.entity.Servico::getId).toList();
         return new ProdutoDetalheResponse(
                 entity.getId(),
                 entity.getNome(),
@@ -48,6 +51,7 @@ public class ProdutoMapper {
                 entity.getServicosTitulo(),
                 entity.getServicosDescricao(),
                 entity.getImagemUrl(),
+                entity.getLinkOficial(),
                 entity.isDestaque(),
                 entity.isAtivo(),
                 entity.getCategoria() != null ? entity.getCategoria().getId() : null,
@@ -60,6 +64,7 @@ public class ProdutoMapper {
                 entity.getFabricante() != null ? entity.getFabricante().getNome() : null,
                 entity.getFabricante() != null ? entity.getFabricante().getLogoUrl() : null,
                 servicos,
+                servicoIds,
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

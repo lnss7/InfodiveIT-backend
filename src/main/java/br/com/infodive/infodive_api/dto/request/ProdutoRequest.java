@@ -18,6 +18,7 @@ public record ProdutoRequest(
         String servicosTitulo,
         String servicosDescricao,
         String imagemUrl,
+        String linkOficial,
         boolean destaque,
         UUID fabricanteId,
         UUID categoriaId,

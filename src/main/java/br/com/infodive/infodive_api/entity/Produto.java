@@ -72,6 +72,9 @@ public class Produto {
     @Column(name = "imagem_url")
     private String imagemUrl;
 
+    @Column(name = "link_oficial")
+    private String linkOficial;
+
     @Builder.Default
     private boolean destaque = false;
 

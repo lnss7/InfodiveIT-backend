@@ -70,6 +70,7 @@ public class ProdutoService {
                 .servicosTitulo(request.servicosTitulo())
                 .servicosDescricao(request.servicosDescricao())
                 .imagemUrl(request.imagemUrl())
+                .linkOficial(request.linkOficial())
                 .destaque(request.destaque())
                 .build();
         aplicarRelacionamentos(produto, request);
@@ -93,6 +94,7 @@ public class ProdutoService {
         produto.setServicosTitulo(request.servicosTitulo());
         produto.setServicosDescricao(request.servicosDescricao());
         produto.setImagemUrl(request.imagemUrl());
+        produto.setLinkOficial(request.linkOficial());
         produto.setDestaque(request.destaque());
 
         if (oldImagemUrl != null && !oldImagemUrl.equals(request.imagemUrl())) {
