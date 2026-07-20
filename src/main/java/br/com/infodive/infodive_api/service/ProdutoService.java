@@ -15,6 +15,8 @@ import br.com.infodive.infodive_api.repository.SolucaoRepository;
 import java.util.ArrayList;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ public class ProdutoService {
     private final ProdutoMapper produtoMapper;
     private final SupabaseStorageService supabaseStorageService;
 
+    @Cacheable(value = "produtos", key = "(#categoriaSlug ?: 'all') + '-' + (#fabricanteSlug ?: 'all') + '-' + (#destaque ?: 'all') + '-' + #page + '-' + #size")
     @Transactional(readOnly = true)
     public Page<ProdutoResumoResponse> findAll(
             String categoriaSlug, String fabricanteSlug, Boolean destaque, int page, int size) {
@@ -42,6 +45,7 @@ public class ProdutoService {
                 .map(produtoMapper::toResumoResponse);
     }
 
+    @Cacheable(value = "produto", key = "#slug")
     @Transactional(readOnly = true)
     public ProdutoDetalheResponse findBySlug(String slug) {
         return produtoRepository.findBySlugAndAtivoTrue(slug)
@@ -56,6 +60,7 @@ public class ProdutoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
     }
 
+    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
     @Transactional
     public ProdutoDetalheResponse create(ProdutoRequest request) {
         Produto produto = Produto.builder()
@@ -77,6 +82,7 @@ public class ProdutoService {
         return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
     }
 
+    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
     @Transactional
     public ProdutoDetalheResponse update(UUID id, ProdutoRequest request) {
         Produto produto = produtoRepository.findById(id)
@@ -105,6 +111,7 @@ public class ProdutoService {
         return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
     }
 
+    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Produto produto = produtoRepository.findById(id)

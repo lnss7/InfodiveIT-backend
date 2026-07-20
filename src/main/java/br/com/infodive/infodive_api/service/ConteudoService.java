@@ -16,6 +16,8 @@ import br.com.infodive.infodive_api.entity.ConteudoBloco;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +36,7 @@ public class ConteudoService {
     private final ObjectMapper objectMapper;
     private final SupabaseStorageService supabaseStorageService;
 
+    @Cacheable(value = "conteudos", key = "(#tipo ?: 'all') + '-' + (#origem ?: 'all') + '-' + (#destaque ?: 'all') + '-' + #page + '-' + #size")
     @Transactional(readOnly = true)
     public Page<ConteudoResponse> findAll(TipoConteudo tipo, OrigemConteudo origem, Boolean destaque, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -41,6 +44,7 @@ public class ConteudoService {
                 .map(conteudoMapper::toResponse);
     }
 
+    @Cacheable(value = "conteudo", key = "#slug")
     @Transactional(readOnly = true)
     public ConteudoResponse findBySlug(String slug) {
         return conteudoRepository.findBySlugAndAtivoTrue(slug)
@@ -55,6 +59,7 @@ public class ConteudoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Conteúdo não encontrado: " + id));
     }
 
+    @CacheEvict(value = {"conteudos", "conteudo"}, allEntries = true)
     @Transactional
     public ConteudoResponse create(ConteudoRequest request) {
         validarDestaques(null, request.destaque(), true);
@@ -77,6 +82,7 @@ public class ConteudoService {
         return conteudoMapper.toResponse(conteudoRepository.save(conteudo));
     }
 
+    @CacheEvict(value = {"conteudos", "conteudo"}, allEntries = true)
     @Transactional
     public ConteudoResponse update(UUID id, ConteudoRequest request) {
         Conteudo conteudo = conteudoRepository.findById(id)
@@ -107,6 +113,7 @@ public class ConteudoService {
         return conteudoMapper.toResponse(conteudoRepository.save(conteudo));
     }
 
+    @CacheEvict(value = {"conteudos", "conteudo"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Conteudo conteudo = conteudoRepository.findById(id)

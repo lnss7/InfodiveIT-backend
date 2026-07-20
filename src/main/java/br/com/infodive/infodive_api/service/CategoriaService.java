@@ -9,6 +9,8 @@ import br.com.infodive.infodive_api.repository.CategoriaRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class CategoriaService {
     private final CategoriaRepository repository;
     private final CategoriaMapper mapper;
 
+    @Cacheable(value = "categorias")
     @Transactional(readOnly = true)
     public List<CategoriaResponse> findAll() {
         return repository.findAllByAtivoTrueOrderByOrdemAscNomeAsc()
@@ -27,6 +30,7 @@ public class CategoriaService {
                 .toList();
     }
 
+    @Cacheable(value = "categoria", key = "#slug")
     @Transactional(readOnly = true)
     public CategoriaResponse findBySlug(String slug) {
         return repository.findBySlugAndAtivoTrue(slug)
@@ -41,12 +45,14 @@ public class CategoriaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
     }
 
+    @CacheEvict(value = {"categorias", "categoria"}, allEntries = true)
     @Transactional
     public CategoriaResponse create(CategoriaRequest request) {
         Categoria entity = mapper.toEntity(request);
         return mapper.toResponse(repository.save(entity));
     }
 
+    @CacheEvict(value = {"categorias", "categoria"}, allEntries = true)
     @Transactional
     public CategoriaResponse update(UUID id, CategoriaRequest request) {
         Categoria entity = repository.findById(id)
@@ -55,6 +61,7 @@ public class CategoriaService {
         return mapper.toResponse(repository.save(entity));
     }
 
+    @CacheEvict(value = {"categorias", "categoria"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Categoria entity = repository.findById(id)

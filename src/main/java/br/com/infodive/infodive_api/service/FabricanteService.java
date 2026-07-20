@@ -9,6 +9,8 @@ import br.com.infodive.infodive_api.repository.FabricanteRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ public class FabricanteService {
     private final FabricanteMapper fabricanteMapper;
     private final SupabaseStorageService supabaseStorageService;
 
+    @Cacheable(value = "fabricantes", key = "#destaque == null ? 'all' : #destaque.toString()")
     @Transactional(readOnly = true)
     public List<FabricanteResponse> findAll(Boolean destaque) {
         return fabricanteRepository.findAllWithFilters(destaque)
@@ -28,6 +31,7 @@ public class FabricanteService {
                 .toList();
     }
 
+    @Cacheable(value = "fabricante", key = "#slug")
     @Transactional(readOnly = true)
     public FabricanteResponse findBySlug(String slug) {
         return fabricanteRepository.findBySlugAndAtivoTrue(slug)
@@ -42,12 +46,14 @@ public class FabricanteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
     }
 
+    @CacheEvict(value = {"fabricantes", "fabricante"}, allEntries = true)
     @Transactional
     public FabricanteResponse create(FabricanteRequest request) {
         Fabricante fabricante = fabricanteMapper.toEntity(request);
         return fabricanteMapper.toResponse(fabricanteRepository.save(fabricante));
     }
 
+    @CacheEvict(value = {"fabricantes", "fabricante"}, allEntries = true)
     @Transactional
     public FabricanteResponse update(UUID id, FabricanteRequest request) {
         Fabricante fabricante = fabricanteRepository.findById(id)
@@ -64,6 +70,7 @@ public class FabricanteService {
         return fabricanteMapper.toResponse(fabricanteRepository.save(fabricante));
     }
 
+    @CacheEvict(value = {"fabricantes", "fabricante"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Fabricante fabricante = fabricanteRepository.findById(id)

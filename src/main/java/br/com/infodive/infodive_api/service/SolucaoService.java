@@ -12,6 +12,8 @@ import br.com.infodive.infodive_api.repository.SolucaoRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class SolucaoService {
     private final SolucaoMapper solucaoMapper;
     private final SupabaseStorageService supabaseStorageService;
 
+    @Cacheable(value = "solucoes")
     @Transactional(readOnly = true)
     public List<SolucaoResponse> findAll() {
         return solucaoRepository.findAllByAtivoTrueOrderByOrdemAscTituloAsc()
@@ -33,6 +36,7 @@ public class SolucaoService {
                 .toList();
     }
 
+    @Cacheable(value = "solucao", key = "#slug")
     @Transactional(readOnly = true)
     public SolucaoResponse findBySlug(String slug) {
         return solucaoRepository.findBySlugAndAtivoTrue(slug)
@@ -47,6 +51,7 @@ public class SolucaoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada: " + id));
     }
 
+    @CacheEvict(value = {"solucoes", "solucao"}, allEntries = true)
     @Transactional
     public SolucaoResponse create(SolucaoRequest request) {
         Solucao solucao = solucaoMapper.toEntity(request);
@@ -55,6 +60,7 @@ public class SolucaoService {
         return solucaoMapper.toResponse(solucaoRepository.save(solucao));
     }
 
+    @CacheEvict(value = {"solucoes", "solucao"}, allEntries = true)
     @Transactional
     public SolucaoResponse update(UUID id, SolucaoRequest request) {
         Solucao solucao = solucaoRepository.findById(id)
@@ -73,6 +79,7 @@ public class SolucaoService {
         return solucaoMapper.toResponse(solucaoRepository.save(solucao));
     }
 
+    @CacheEvict(value = {"solucoes", "solucao"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Solucao solucao = solucaoRepository.findById(id)
