@@ -20,4 +20,8 @@ public interface FabricanteRepository extends JpaRepository<Fabricante, UUID> {
     List<Fabricante> findAllWithFilters(@Param("destaque") Boolean destaque);
 
     Optional<Fabricante> findBySlugAndAtivoTrue(String slug);
+
+    long countByDestaqueTrue();
+
+    long countByDestaqueTrueAndIdNot(UUID id);
 }

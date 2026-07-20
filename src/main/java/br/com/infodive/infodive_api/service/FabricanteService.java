@@ -49,6 +49,9 @@ public class FabricanteService {
     @CacheEvict(value = {"fabricantes", "fabricante"}, allEntries = true)
     @Transactional
     public FabricanteResponse create(FabricanteRequest request) {
+        if (request.destaque() && fabricanteRepository.countByDestaqueTrue() >= 6) {
+            throw new IllegalArgumentException("Limite atingido: Já existem 6 fabricantes marcados como destaque. Desmarque outro fabricante antes de destacar este.");
+        }
         Fabricante fabricante = fabricanteMapper.toEntity(request);
         return fabricanteMapper.toResponse(fabricanteRepository.save(fabricante));
     }
@@ -58,6 +61,10 @@ public class FabricanteService {
     public FabricanteResponse update(UUID id, FabricanteRequest request) {
         Fabricante fabricante = fabricanteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
+
+        if (request.destaque() && fabricanteRepository.countByDestaqueTrueAndIdNot(id) >= 6) {
+            throw new IllegalArgumentException("Limite atingido: Já existem 6 fabricantes marcados como destaque. Desmarque outro fabricante antes de destacar este.");
+        }
         
         String oldLogoUrl = fabricante.getLogoUrl();
         fabricanteMapper.updateEntity(fabricante, request);

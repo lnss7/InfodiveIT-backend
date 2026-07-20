@@ -63,6 +63,9 @@ public class ProdutoService {
     @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
     @Transactional
     public ProdutoDetalheResponse create(ProdutoRequest request) {
+        if (request.destaque() && produtoRepository.countByDestaqueTrue() >= 6) {
+            throw new IllegalArgumentException("Limite atingido: Já existem 6 produtos marcados como destaque. Desmarque outro produto antes de destacar este.");
+        }
         Produto produto = Produto.builder()
                 .slug(request.slug())
                 .nome(request.nome())
@@ -87,6 +90,10 @@ public class ProdutoService {
     public ProdutoDetalheResponse update(UUID id, ProdutoRequest request) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
+
+        if (request.destaque() && produtoRepository.countByDestaqueTrueAndIdNot(id) >= 6) {
+            throw new IllegalArgumentException("Limite atingido: Já existem 6 produtos marcados como destaque. Desmarque outro produto antes de destacar este.");
+        }
         
         String oldImagemUrl = produto.getImagemUrl();
 

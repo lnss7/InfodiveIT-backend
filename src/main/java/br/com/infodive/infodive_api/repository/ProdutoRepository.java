@@ -28,4 +28,8 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
     );
 
     Optional<Produto> findBySlugAndAtivoTrue(String slug);
+
+    long countByDestaqueTrue();
+
+    long countByDestaqueTrueAndIdNot(UUID id);
 }
