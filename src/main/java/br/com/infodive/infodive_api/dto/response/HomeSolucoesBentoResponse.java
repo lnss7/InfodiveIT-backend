@@ -9,5 +9,8 @@ public record HomeSolucoesBentoResponse(
         String icone,
         String imagemIaUrl,
         String textoCarrossel,
-        int ordem
+        int ordem,
+        UUID solucaoId,
+        String solucaoSlug,
+        String solucaoTitulo
 ) {}

@@ -3,9 +3,11 @@ package br.com.infodive.infodive_api.service;
 import br.com.infodive.infodive_api.dto.request.HomeSolucoesBentoRequest;
 import br.com.infodive.infodive_api.dto.response.HomeSolucoesBentoResponse;
 import br.com.infodive.infodive_api.entity.HomeSolucoesBento;
+import br.com.infodive.infodive_api.entity.Solucao;
 import br.com.infodive.infodive_api.exception.BusinessException;
 import br.com.infodive.infodive_api.exception.ResourceNotFoundException;
 import br.com.infodive.infodive_api.repository.HomeSolucoesBentoRepository;
+import br.com.infodive.infodive_api.repository.SolucaoRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HomeSolucoesBentoService {
 
     private final HomeSolucoesBentoRepository repository;
+    private final SolucaoRepository solucaoRepository;
     private final SupabaseStorageService supabaseStorageService;
 
     @Transactional(readOnly = true)
@@ -49,6 +52,14 @@ public class HomeSolucoesBentoService {
         entity.setTextoCarrossel(request.textoCarrossel());
         entity.setOrdem(request.ordem());
 
+        if (request.solucaoId() != null) {
+            Solucao solucao = solucaoRepository.findById(request.solucaoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Solução não encontrada: " + request.solucaoId()));
+            entity.setSolucao(solucao);
+        } else {
+            entity.setSolucao(null);
+        }
+
         if (oldImagemIaUrl != null && !oldImagemIaUrl.equals(request.imagemIaUrl())) {
             supabaseStorageService.deleteFile(oldImagemIaUrl);
         }
@@ -62,6 +73,7 @@ public class HomeSolucoesBentoService {
     }
 
     private HomeSolucoesBentoResponse toResponse(HomeSolucoesBento e) {
+        Solucao s = e.getSolucao();
         return new HomeSolucoesBentoResponse(
                 e.getId(),
                 e.getNome(),
@@ -69,7 +81,10 @@ public class HomeSolucoesBentoService {
                 e.getIcone(),
                 e.getImagemIaUrl(),
                 e.getTextoCarrossel(),
-                e.getOrdem()
+                e.getOrdem(),
+                s != null ? s.getId() : null,
+                s != null ? s.getSlug() : null,
+                s != null ? s.getTitulo() : null
         );
     }
 }
