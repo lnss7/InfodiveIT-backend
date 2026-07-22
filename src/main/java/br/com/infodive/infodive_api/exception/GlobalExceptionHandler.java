@@ -3,6 +3,7 @@ package br.com.infodive.infodive_api.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Tratamento centralizado de exceções. Toda exceção é convertida no formato padrão {@link ErrorResponse}.
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -25,6 +27,22 @@ public class GlobalExceptionHandler {
                         LocalDateTime.now(),
                         404,
                         "Not Found",
+                        ex.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request) {
+
+        log.warn("Solicitação inválida em {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        LocalDateTime.now(),
+                        400,
+                        "Bad Request",
                         ex.getMessage(),
                         request.getRequestURI()
                 ));
@@ -86,12 +104,13 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
+        log.error("Erro não tratado na requisição {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(
                         LocalDateTime.now(),
                         500,
                         "Internal Server Error",
-                        "Erro interno no servidor",
+                        "Erro interno no servidor: " + ex.getMessage(),
                         request.getRequestURI()
                 ));
     }
