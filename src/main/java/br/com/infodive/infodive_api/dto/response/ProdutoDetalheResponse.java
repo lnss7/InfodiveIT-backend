@@ -22,6 +22,7 @@ public record ProdutoDetalheResponse(
         String imagemUrl,
         String linkOficial,
         boolean destaque,
+        boolean novidade,
         boolean ativo,
         UUID categoriaId,
         String categoriaSlug,

@@ -79,6 +79,9 @@ public class Produto {
     private boolean destaque = false;
 
     @Builder.Default
+    private boolean novidade = false;
+
+    @Builder.Default
     private boolean ativo = true;
 
     @ManyToOne(fetch = FetchType.LAZY)

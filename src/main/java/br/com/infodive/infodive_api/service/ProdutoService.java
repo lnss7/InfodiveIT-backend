@@ -35,13 +35,13 @@ public class ProdutoService {
     private final ProdutoMapper produtoMapper;
     private final SupabaseStorageService supabaseStorageService;
 
-    @Cacheable(value = "produtos", key = "(#categoriaSlug ?: 'all') + '-' + (#fabricanteSlug ?: 'all') + '-' + (#destaque ?: 'all') + '-' + #page + '-' + #size")
+    @Cacheable(value = "produtos", key = "(#categoriaSlug ?: 'all') + '-' + (#fabricanteSlug ?: 'all') + '-' + (#destaque ?: 'all') + '-' + (#novidade ?: 'all') + '-' + #page + '-' + #size")
     @Transactional(readOnly = true)
     public Page<ProdutoResumoResponse> findAll(
-            String categoriaSlug, String fabricanteSlug, Boolean destaque, int page, int size) {
+            String categoriaSlug, String fabricanteSlug, Boolean destaque, Boolean novidade, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return produtoRepository
-                .findAllWithFilters(categoriaSlug, fabricanteSlug, destaque, pageable)
+                .findAllWithFilters(categoriaSlug, fabricanteSlug, destaque, novidade, pageable)
                 .map(produtoMapper::toResumoResponse);
     }
 
@@ -60,11 +60,22 @@ public class ProdutoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
     }
 
-    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
+    @Cacheable(value = "produto-novidade")
+    @Transactional(readOnly = true)
+    public ProdutoResumoResponse findNovidade() {
+        return produtoRepository.findFirstByNovidadeTrueAndAtivoTrue()
+                .map(produtoMapper::toResumoResponse)
+                .orElse(null);
+    }
+
+    @CacheEvict(value = {"produtos", "produto", "produto-novidade"}, allEntries = true)
     @Transactional
     public ProdutoDetalheResponse create(ProdutoRequest request) {
         if (request.destaque() && produtoRepository.countByDestaqueTrue() >= 6) {
             throw new IllegalArgumentException("Limite atingido: Já existem 6 produtos marcados como destaque. Desmarque outro produto antes de destacar este.");
+        }
+        if (Boolean.TRUE.equals(request.novidade())) {
+            desmarcarOutrasNovidades(null);
         }
         Produto produto = Produto.builder()
                 .slug(request.slug())
@@ -80,12 +91,13 @@ public class ProdutoService {
                 .imagemUrl(request.imagemUrl())
                 .linkOficial(request.linkOficial())
                 .destaque(request.destaque())
+                .novidade(Boolean.TRUE.equals(request.novidade()))
                 .build();
         aplicarRelacionamentos(produto, request);
         return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
     }
 
-    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
+    @CacheEvict(value = {"produtos", "produto", "produto-novidade"}, allEntries = true)
     @Transactional
     public ProdutoDetalheResponse update(UUID id, ProdutoRequest request) {
         Produto produto = produtoRepository.findById(id)
@@ -95,6 +107,10 @@ public class ProdutoService {
             throw new IllegalArgumentException("Limite atingido: Já existem 6 produtos marcados como destaque. Desmarque outro produto antes de destacar este.");
         }
         
+        if (Boolean.TRUE.equals(request.novidade())) {
+            desmarcarOutrasNovidades(id);
+        }
+
         String oldImagemUrl = produto.getImagemUrl();
 
         produto.setNome(request.nome());
@@ -109,6 +125,7 @@ public class ProdutoService {
         produto.setImagemUrl(request.imagemUrl());
         produto.setLinkOficial(request.linkOficial());
         produto.setDestaque(request.destaque());
+        produto.setNovidade(Boolean.TRUE.equals(request.novidade()));
 
         if (oldImagemUrl != null && !oldImagemUrl.equals(request.imagemUrl())) {
             supabaseStorageService.deleteFile(oldImagemUrl);
@@ -118,7 +135,7 @@ public class ProdutoService {
         return produtoMapper.toDetalheResponse(produtoRepository.save(produto));
     }
 
-    @CacheEvict(value = {"produtos", "produto"}, allEntries = true)
+    @CacheEvict(value = {"produtos", "produto", "produto-novidade"}, allEntries = true)
     @Transactional
     public void delete(UUID id) {
         Produto produto = produtoRepository.findById(id)
@@ -127,6 +144,15 @@ public class ProdutoService {
             supabaseStorageService.deleteFile(produto.getImagemUrl());
         }
         produtoRepository.delete(produto);
+    }
+
+    private void desmarcarOutrasNovidades(UUID currentId) {
+        produtoRepository.findAllByNovidadeTrue().forEach(p -> {
+            if (currentId == null || !p.getId().equals(currentId)) {
+                p.setNovidade(false);
+                produtoRepository.save(p);
+            }
+        });
     }
 
     /** Resolve fabricante, solução, categoria e serviços a partir dos ids do request. */

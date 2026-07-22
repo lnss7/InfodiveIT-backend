@@ -21,6 +21,7 @@ public record ProdutoRequest(
                 String imagemUrl,
                 String linkOficial,
                 boolean destaque,
+                Boolean novidade,
                 UUID fabricanteId,
                 UUID categoriaId,
                 UUID solucaoId,

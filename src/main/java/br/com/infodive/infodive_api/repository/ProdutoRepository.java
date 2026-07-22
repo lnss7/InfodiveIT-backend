@@ -18,16 +18,22 @@ public interface ProdutoRepository extends JpaRepository<Produto, UUID> {
             AND (:categoriaSlug IS NULL OR p.categoria.slug = :categoriaSlug)
             AND (:fabricanteSlug IS NULL OR p.fabricante.slug = :fabricanteSlug)
             AND (:destaque IS NULL OR p.destaque = :destaque)
-            ORDER BY p.destaque DESC, p.nome ASC
+            AND (:novidade IS NULL OR p.novidade = :novidade)
+            ORDER BY p.novidade DESC, p.destaque DESC, p.nome ASC
             """)
     Page<Produto> findAllWithFilters(
             @Param("categoriaSlug") String categoriaSlug,
             @Param("fabricanteSlug") String fabricanteSlug,
             @Param("destaque") Boolean destaque,
+            @Param("novidade") Boolean novidade,
             Pageable pageable
     );
 
     Optional<Produto> findBySlugAndAtivoTrue(String slug);
+
+    Optional<Produto> findFirstByNovidadeTrueAndAtivoTrue();
+
+    java.util.List<Produto> findAllByNovidadeTrue();
 
     long countByDestaqueTrue();
 

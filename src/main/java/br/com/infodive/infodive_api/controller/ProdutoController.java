@@ -32,9 +32,16 @@ public class ProdutoController {
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String fabricante,
             @RequestParam(required = false) Boolean destaque,
+            @RequestParam(required = false) Boolean novidade,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
-        return ResponseEntity.ok(produtoService.findAll(categoria, fabricante, destaque, page, size));
+        return ResponseEntity.ok(produtoService.findAll(categoria, fabricante, destaque, novidade, page, size));
+    }
+
+    @GetMapping("/novidade")
+    public ResponseEntity<ProdutoResumoResponse> findNovidade() {
+        ProdutoResumoResponse novidade = produtoService.findNovidade();
+        return novidade != null ? ResponseEntity.ok(novidade) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{identifier}")

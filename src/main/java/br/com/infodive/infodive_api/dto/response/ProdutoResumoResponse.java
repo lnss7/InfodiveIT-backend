@@ -11,6 +11,7 @@ public record ProdutoResumoResponse(
         String descricaoCurta,
         String imagemUrl,
         boolean destaque,
+        boolean novidade,
         String categoriaSlug,
         String categoriaTitle,
         String solucaoSlug,
