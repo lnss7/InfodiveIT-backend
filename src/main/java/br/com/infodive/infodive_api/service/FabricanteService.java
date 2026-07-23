@@ -62,7 +62,7 @@ public class FabricanteService {
         Fabricante fabricante = fabricanteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Fabricante não encontrado: " + id));
 
-        if (request.destaque() && fabricanteRepository.countByDestaqueTrueAndIdNot(id) >= 6) {
+        if (!fabricante.isDestaque() && request.destaque() && fabricanteRepository.countByDestaqueTrue() >= 6) {
             throw new IllegalArgumentException("Limite atingido: Já existem 6 fabricantes marcados como destaque. Desmarque outro fabricante antes de destacar este.");
         }
         

@@ -103,7 +103,7 @@ public class ProdutoService {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado: " + id));
 
-        if (request.destaque() && produtoRepository.countByDestaqueTrueAndIdNot(id) >= 6) {
+        if (!produto.isDestaque() && request.destaque() && produtoRepository.countByDestaqueTrue() >= 6) {
             throw new IllegalArgumentException("Limite atingido: Já existem 6 produtos marcados como destaque. Desmarque outro produto antes de destacar este.");
         }
         
