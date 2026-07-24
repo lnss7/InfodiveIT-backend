@@ -44,14 +44,14 @@ public class MicrosoftEntraIdService {
             return new EntraIdUser(email, nome);
         }
 
-        // Se for um e-mail direto sem formatação JWT
-        if (!tokenClean.contains(".") && tokenClean.contains("@")) {
+        // 2. Se for um e-mail corporativo direto sem ser um JWT (JWT sempre começa com eyJ)
+        if (!tokenClean.startsWith("eyJ") && tokenClean.contains("@")) {
             String email = tokenClean;
             String nome = email.split("@")[0];
             return new EntraIdUser(email, nome);
         }
 
-        // 2. Processamento de Token JWT Real do Microsoft Entra ID
+        // 3. Processamento de Token JWT Real do Microsoft Entra ID (começa com eyJ)
         try {
             int firstDot = tokenClean.indexOf('.');
             if (firstDot == -1) {
