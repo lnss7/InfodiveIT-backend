@@ -29,7 +29,13 @@ public class AuthController {
         // 1. Valida o token Entra ID e extrai email e nome
         EntraIdUser entraUser = entraIdService.validateAndExtract(request.idToken());
 
-        // 2. Verifica se o email está na allowlist de admins ativos
+        // 2. Valida se o e-mail pertence ao domínio corporativo @infodive.com.br
+        String emailLower = entraUser.email().toLowerCase();
+        if (!emailLower.endsWith("@infodive.com.br")) {
+            throw new AcessoNegadoException("Acesso negado: Apenas contas corporativas com domínio @infodive.com.br têm permissão de acesso ao painel.");
+        }
+
+        // 3. Verifica se o email está na allowlist de admins ativos
         if (!adminService.isEmailAuthorized(entraUser.email())) {
             throw new AcessoNegadoException("E-mail não autorizado para acesso administrativo: " + entraUser.email());
         }
