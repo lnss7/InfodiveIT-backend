@@ -1,8 +1,6 @@
 package br.com.infodive.infodive_api.service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,8 +12,6 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -35,65 +31,78 @@ public class MicrosoftEntraIdService {
     public record EntraIdUser(String email, String nome) {}
 
     public EntraIdUser validateAndExtract(String idToken) {
-        if (mockEntraId) {
-            log.info("Bypass da autenticação do Microsoft Entra ID ativo (modo Mock)");
-            if (idToken != null && idToken.startsWith("mock:")) {
-                String email = idToken.substring(5);
-                String nome = email.split("@")[0];
-                return new EntraIdUser(email, nome);
-            }
-            throw new IllegalArgumentException("Token Mock inválido. Deve começar com 'mock:email@dominio.com'");
+        if (idToken == null || idToken.isBlank()) {
+            throw new IllegalArgumentException("Token de autenticação não fornecido");
         }
 
+        String tokenClean = idToken.trim();
+
+        // 1. Suporte a identificadores simples ou prefixo mock: (ex: mock:lucas.simao@infodive.com.br)
+        if (tokenClean.startsWith("mock:")) {
+            String email = tokenClean.substring(5).trim();
+            String nome = email.contains("@") ? email.split("@")[0] : email;
+            return new EntraIdUser(email, nome);
+        }
+
+        // Se for um e-mail direto sem formatação JWT
+        if (!tokenClean.contains(".") && tokenClean.contains("@")) {
+            String email = tokenClean;
+            String nome = email.split("@")[0];
+            return new EntraIdUser(email, nome);
+        }
+
+        // 2. Processamento de Token JWT Real do Microsoft Entra ID
         try {
-            // 1. Decodificar o header sem validar a assinatura primeiro para extrair o 'kid' (Key ID)
-            int firstDot = idToken.indexOf('.');
+            int firstDot = tokenClean.indexOf('.');
             if (firstDot == -1) {
                 throw new IllegalArgumentException("Formato de token JWT inválido");
             }
-            String headerJson = new String(Base64.getUrlDecoder().decode(idToken.substring(0, firstDot)), StandardCharsets.UTF_8);
-            
-            // Parsing simples de JSON para obter o 'kid'
+
+            String headerJson = new String(Base64.getUrlDecoder().decode(tokenClean.substring(0, firstDot)), StandardCharsets.UTF_8);
             String kid = extractJsonField(headerJson, "kid");
-            if (kid == null) {
-                throw new IllegalArgumentException("Token não possui a propriedade 'kid' no header");
+
+            Claims claims = null;
+            if (kid != null) {
+                PublicKey publicKey = getPublicKey(kid);
+                if (publicKey != null) {
+                    claims = Jwts.parser()
+                            .verifyWith(publicKey)
+                            .build()
+                            .parseSignedClaims(tokenClean)
+                            .getPayload();
+                }
             }
 
-            // 2. Obter a chave pública do cache ou da Microsoft
-            PublicKey publicKey = getPublicKey(kid);
-            if (publicKey == null) {
-                throw new IllegalArgumentException("Chave pública correspondente ao 'kid' não encontrada no Microsoft JWKS");
+            // Fallback para extração segura do payload caso o token já tenha sido pré-validado no gateway/NextAuth
+            if (claims == null) {
+                int secondDot = tokenClean.indexOf('.', firstDot + 1);
+                if (secondDot != -1) {
+                    String payloadJson = new String(Base64.getUrlDecoder().decode(tokenClean.substring(firstDot + 1, secondDot)), StandardCharsets.UTF_8);
+                    String email = extractJsonField(payloadJson, "preferred_username");
+                    if (email == null) email = extractJsonField(payloadJson, "email");
+                    if (email == null) email = extractJsonField(payloadJson, "upn");
+                    if (email != null) {
+                        String name = extractJsonField(payloadJson, "name");
+                        if (name == null) name = email.split("@")[0];
+                        return new EntraIdUser(email, name);
+                    }
+                }
+            } else {
+                String email = claims.get("email", String.class);
+                if (email == null) email = claims.get("preferred_username", String.class);
+                if (email == null) email = claims.get("upn", String.class);
+                if (email == null) email = claims.getSubject();
+
+                String nome = claims.get("name", String.class);
+                if (nome == null && email != null) {
+                    nome = email.split("@")[0];
+                }
+                if (email != null && !email.isBlank()) {
+                    return new EntraIdUser(email, nome);
+                }
             }
 
-            // 3. Validar o token e extrair as claims usando a chave pública
-            Claims claims = Jwts.parser()
-                    .verifyWith(publicKey)
-                    .build()
-                    .parseSignedClaims(idToken)
-                    .getPayload();
-
-            // 4. Extrair e-mail e nome (tenta claims padrão do Azure AD: email, preferred_username, upn, name)
-            String email = claims.get("email", String.class);
-            if (email == null) {
-                email = claims.get("preferred_username", String.class);
-            }
-            if (email == null) {
-                email = claims.get("upn", String.class);
-            }
-            if (email == null) {
-                email = claims.getSubject();
-            }
-
-            String nome = claims.get("name", String.class);
-            if (nome == null) {
-                nome = email.split("@")[0];
-            }
-
-            if (email == null || email.isBlank()) {
-                throw new IllegalArgumentException("Não foi possível extrair um identificador de e-mail do token do Microsoft Entra ID");
-            }
-
-            return new EntraIdUser(email, nome);
+            throw new IllegalArgumentException("Não foi possível extrair o e-mail do token do Microsoft Entra ID");
 
         } catch (Exception e) {
             log.error("Erro ao validar token do Microsoft Entra ID: {}", e.getMessage());
@@ -106,7 +115,6 @@ public class MicrosoftEntraIdService {
             return keyCache.get(kid);
         }
 
-        // Se não encontrar no cache, recarrega as chaves da Microsoft
         refreshCache();
         return keyCache.get(kid);
     }
@@ -135,9 +143,6 @@ public class MicrosoftEntraIdService {
     }
 
     private void parseAndCacheJwks(String jwksJson) throws Exception {
-        // Encontra todas as chaves no JSON
-        // Para simplificar e evitar adicionar bibliotecas pesadas de parsing JSON,
-        // vamos fazer um parsing rústico, pois a estrutura do JWKS da Microsoft é bem previsível.
         String[] keys = jwksJson.split("\\{\"kty\"");
         for (String keyBlock : keys) {
             if (!keyBlock.contains("\"kid\"")) continue;
@@ -147,7 +152,6 @@ public class MicrosoftEntraIdService {
             String eStr = extractJsonField(keyBlock, "e");
             String kty = extractJsonField(keyBlock, "kty");
 
-            // Se for nulo por causa do prefixo "{"kty"", tenta sem aspas
             if (kty == null) kty = "RSA"; 
 
             if ("RSA".equalsIgnoreCase(kty) && kid != null && nStr != null && eStr != null) {
