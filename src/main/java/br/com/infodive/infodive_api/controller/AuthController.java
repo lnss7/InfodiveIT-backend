@@ -35,10 +35,8 @@ public class AuthController {
             throw new AcessoNegadoException("Acesso negado: Apenas contas corporativas com domínio @infodive.com.br têm permissão de acesso ao painel.");
         }
 
-        // 3. Verifica se o email está na allowlist de admins ativos
-        if (!adminService.isEmailAuthorized(entraUser.email())) {
-            throw new AcessoNegadoException("E-mail não autorizado para acesso administrativo: " + entraUser.email());
-        }
+        // 3. Cadastra/Garante autorização para qualquer e-mail válido do domínio @infodive.com.br
+        adminService.ensureEmailAuthorized(entraUser.email(), entraUser.nome());
 
         // 3. Gera o JWT local assinado pelo sistema
         String localToken = jwtService.generateToken(entraUser.email(), entraUser.nome());

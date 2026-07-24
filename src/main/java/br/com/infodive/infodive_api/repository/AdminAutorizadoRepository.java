@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AdminAutorizadoRepository extends JpaRepository<AdminAutorizado, UUID> {
 
     Optional<AdminAutorizado> findByEmailAndAtivoTrue(String email);
+
+    Optional<AdminAutorizado> findByEmailIgnoreCaseAndAtivoTrue(String email);
 }

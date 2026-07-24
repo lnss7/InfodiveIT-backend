@@ -35,9 +35,29 @@ public class AdminAutorizadoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Administrador não encontrado: " + id));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
+    public void ensureEmailAuthorized(String email, String nome) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+        String trimmedEmail = email.trim();
+        if (repository.findByEmailIgnoreCaseAndAtivoTrue(trimmedEmail).isEmpty()) {
+            AdminAutorizado novoAdmin = AdminAutorizado.builder()
+                    .email(trimmedEmail)
+                    .nome(nome != null && !nome.isBlank() ? nome : trimmedEmail.split("@")[0])
+                    .ativo(true)
+                    .build();
+            repository.save(novoAdmin);
+        }
+    }
+
+    @Transactional
     public boolean isEmailAuthorized(String email) {
-        return repository.findByEmailAndAtivoTrue(email).isPresent();
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+        String trimmedEmail = email.trim();
+        return repository.findByEmailIgnoreCaseAndAtivoTrue(trimmedEmail).isPresent();
     }
 
     @Transactional
